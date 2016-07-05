@@ -5,46 +5,66 @@ using System.Collections;
 public class Player : MonoBehaviour
 {
 
-	public float speed;
-	public float moveX;
+	float speed = 9f;
 
 	Rigidbody2D rigid;
 	Animator anim;
 	Vector3 localscale;
 
+	bool facingRight = true;
+
 	void Start ()
 	{
 		rigid = GetComponent<Rigidbody2D> ();
 		anim = GetComponent<Animator> ();
-
-		localscale = transform.localScale;
 	}
-
-
+		
 	// Update is called once per frame
 	void FixedUpdate ()
 	{
-		moveX = Input.GetAxis ("Horizontal");
-
-//		if (moveX > 0) {
-//			//facing right
-//			localscale.x = 1;
-//			transform.localScale = localscale;
-//			anim.SetTrigger ("run");
-//		}
-//
-//
-//		if (moveX < 0) {
-//			//facing left
-//			localscale.x = -1;
-//			transform.localScale = localscale;
-//			anim.SetTrigger ("run");
-//		} s
-	
-
-		rigid.velocity = new Vector2 (moveX * speed, 0);
-
+		// Move (hInput);
 	}
+
+	#region moving
+
+	float hInput = 0;
+
+	void Move (float horizontalInput)
+	{
+		Vector2 moveVector = rigid.velocity;
+		moveVector.x = horizontalInput * speed;
+
+		anim.SetFloat ("speed", Mathf.Abs (moveVector.x));
+
+		rigid.velocity = moveVector;
+
+		if (moveVector.x > 0 && !facingRight) {
+			Flip ();
+		} else if (moveVector.x < 0 && facingRight) {
+			Flip ();
+		}
+	}
+
+
+	public void StartMoving (float horizontalInput)
+	{
+		hInput = horizontalInput;
+		Move (hInput);
+	}
+
+
+
+
+
+	void Flip ()
+	{
+		facingRight = !facingRight;
+		localscale = transform.localScale;
+		localscale.x *= -1;
+		transform.localScale = localscale;
+	}
+
+	#endregion
 
 	#region combo attack
 
@@ -57,6 +77,7 @@ public class Player : MonoBehaviour
 
 	public void Attack ()
 	{
+		
 		//Debug.Log("combo count = " + comboCount);
 		comboCount++;
 		if (comboCount > 3) {
@@ -118,7 +139,7 @@ public class Player : MonoBehaviour
 	{
 		//if (isCombo == false)
 		//{
-		yield return new WaitForSeconds (0.6f);
+		yield return new WaitForSeconds (0.9f);
 		comboCount = 0;
 		isNext = true;
 		anim.Play ("Idle");
